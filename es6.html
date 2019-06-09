@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>es6</title>
+</head>
+<body>
+    <script>
+        function loadImg(src){
+            return new Promise((resolve,reject)=>{
+                let img = new Image()
+                img.src = src;
+                img.onload = function(){
+                    resolve(img)
+                }
+                img.onerror = function(){
+                    reject("error")
+                }
+            })
+        }
+        let url = "http://k.zol-img.com.cn/sjbbs/7692/a7691515_s.jpg"
+        loadImg(url).then(res=>{
+            document.body.appendChild(res);
+            return Promise.resolve("foo")
+        },err=>{
+            console.log(err)
+        }).then(res1=>{
+            console.log(res1)
+            return 222
+        },err1=>{
+            console.log(err1)
+        }).then(res2=>{
+            console.log(res2)
+        },err2=>{
+            console.log(err2)
+        })
+
+
+        // var obj = {c:22}
+        // Object.defineProperty(obj,"c",{
+        //     writable:false,//是否可写
+        //     configurable:false,//是否可删除
+        //     enumerable:false,
+        //     value:"lisi"
+        // })
+
+        // var obj = {b:123}
+        
+        // Object.defineProperty(obj,"b",{
+        //     get(){
+        //         return 111
+        //     },
+        //     set(val){
+        //         obj.b = val
+        //     }
+        // })
+
+        var obj = {abc:"123"}
+
+        var proxy = new Proxy(obj,{
+            get(target,key){
+                console.log(target,key)
+            },
+            set(target,key,val){
+                console.log(target,key,val) 
+            }
+        })
+    </script>
+</body>
+</html>
