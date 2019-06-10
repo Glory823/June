@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+
+<body>
+    <script>
+
+        //3.封装Person能够满足如下测试用例
+
+        function Person(name) {
+            console.log('this is ' + name);
+            var that = this;
+            this.funcArr = [];
+            setTimeout(function () {
+                that.next();
+            })
+        }
+
+        Person.prototype.next = function () {
+            var fn = this.funcArr.shift();
+            fn && fn();
+        }
+
+        Person.prototype.eat = function (something) {
+            var that = this;
+            var func = (function (something) {
+                return function () {
+                    console.log('eat ' + something);
+                    that.next();
+                }
+            })(something);
+            this.funcArr.push(func);
+            return this;
+        }
+
+        Person.prototype.sleepFirst = function (time) {
+            var that = this;
+            var func = (function (time) {
+                return function () {
+                    setTimeout(function () {
+                        console.log('wait ' + time);
+                        that.next();
+                    }, time);
+                }
+            })(time);
+            this.funcArr.push(func);
+            return this;
+        }
+        Person.prototype.sleep = function (time) {
+            var that = this;
+            var func = (function (time) {
+                return function () {
+                    setTimeout(function () {
+                        console.log('wait ' + time);
+                        that.next();
+                    }, time);
+                }
+            })(time);
+            this.funcArr.push(func);
+            return this;
+        }
+
+
+        function person(name) {
+            return new Person(name);
+        }
+        // Person('li');
+        // person('li').sleep(10).eat('danner')
+        person('li').sleepFirst(3000).eat('danner').sleep(1000).eat('food').sleep(1000).eat(123);
+        // person('li').eat('food').eat('danner')
+
+
+    </script>
+</body>
+
+</html>

@@ -27,12 +27,12 @@
         },err=>{
             console.log(err)
         }).then(res1=>{
-            console.log(res1)
+            // console.log(res1)
             return 222
         },err1=>{
             console.log(err1)
         }).then(res2=>{
-            console.log(res2)
+            // console.log(res2)
         },err2=>{
             console.log(err2)
         })
@@ -57,16 +57,30 @@
         //     }
         // })
 
-        var obj = {abc:"123"}
+        // var obj = {abc:"123"}
 
-        var proxy = new Proxy(obj,{
-            get(target,key){
-                console.log(target,key)
-            },
-            set(target,key,val){
-                console.log(target,key,val) 
-            }
-        })
+        // var proxy = new Proxy(obj,{
+        //     get(target,key){
+        //         console.log(target,key)
+        //     },
+        //     set(target,key,val){
+        //         console.log(target,key,val) 
+        //     }
+        // })
+
+
+        function timeout(ms){
+            return new Promise((resolve,reject)=>{
+                setTimeout(resolve,ms);
+            })
+        }
+
+        async function asyncList(val,ms){
+            await timeout(ms);
+            console.log(val)
+        }
+       asyncList("sangrongrong",1000)
+
     </script>
 </body>
 </html>

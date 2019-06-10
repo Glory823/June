@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>homework</title>
+    <style>
+        img{
+            width: 200px;
+            height: 300px;
+        }
+    </style>
+</head>
+<body>
+    <script>
+        //1.用原生实现一个promise
+        function PromiseSelf(){
+            this.status="pending";
+            this.msg="";  //设置resolve函数的参数
+            var process = arguments[0];//promise接受的参数
+            var that = this;
+            process(function(){
+                that.status = "resolve";
+                that.msg = arguments[0];
+            },function(){
+                that.status = "reject";
+                that.msg = arguments[0]
+            })
+            return this;
+        }
+        PromiseSelf.prototype.then = function(){
+            //arguments --> 指then链中的参数
+            setTimeout(() => {
+                if(this.status == "resolve"){
+                    arguments[0](this.msg)
+                }
+                if(this.status == "reject" && arguments[1]){
+                    arguments[1](this.msg)
+                }
+            }, 1000);
+            
+        }
+
+        // new PromiseSelf((reslove,reject)=>{
+        //     reject((res)=>{})
+        //     reslove(111)
+        // }).then(res=>{console.log(res)},err=>{console.log("err")})
+
+
+        function loadImg(src){
+            return new PromiseSelf((resolve,reject)=>{
+                setTimeout(() => {
+                    let img = new Image()
+                    img.src = src;
+                    img.onload = function(){
+                        resolve(img)
+                    }
+                    img.onerror = function(){
+                        reject("error")
+                    }
+                }, 500);
+            })
+        }
+
+
+        let url = "http://k.zol-img.com.cn/sjbbs/7692/a7691515_s.jpg"
+
+        // loadImg(url).then(res=>{
+        //     console.log(res)
+        //     document.body.appendChild(res);
+        // },err=>{
+        //     console.log(err)
+        // })
+
+
+        //2.用async实现十张图片的依次加载和并行加载
+
+        let imgs = [
+            "http://www.cnr.cn/xjfw/btfw/2011btfw/jkwh/jkwt/20160516/W020160516492035673595.jpg",
+            "http://h.hiphotos.baidu.com/lvpics/w=600/sign=5dc3621e19d5ad6eaaf967eab1c939a3/0b55b319ebc4b745cc71eecccdfc1e178b821506.jpg",
+            "http://pic36.nipic.com/20131129/8821914_111419739001_2.jpg",
+            "http://e.hiphotos.baidu.com/lvpics/w=600/sign=75546d085b82b2b7a79f3ac401adcb0a/8d5494eef01f3a29f9e520c29b25bc315c607c89.jpg",
+            "http://pic27.nipic.com/20130315/11511914_151013608193_2.jpg",
+            "http://pic22.nipic.com/20120617/7196215_160634839000_2.jpg"
+        ]
+
+        function imgLoading(src){
+            return new PromiseSelf((resolve,reject)=>{
+                setTimeout(() => {
+                    let img = new Image()
+                    img.src = src;
+                    img.onload = function(){
+                        resolve(img)
+                    }
+                    img.onerror = function(){
+                        reject("error")
+                    }
+                }, 500);
+            })
+        }
+
+        //依次加载
+        // async function asyncImg(imgs){
+        //     for(var i=0;i<imgs.length;i++){
+        //         let img = await imgLoading(imgs[i])
+        //         document.body.appendChild(img)
+        //     }
+        // }
+        // asyncImg(imgs)
+
+        //并行加载
+
+        function asyncImg(imgs){
+            imgs.forEach(async item=>{
+                let img = await imgLoading(item)
+                document.body.appendChild(img)
+            })
+        }
+
+        asyncImg(imgs)
+
+    </script>
+</body>
+</html>

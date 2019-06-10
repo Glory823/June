@@ -115,7 +115,10 @@ then方法中的参数   就是resolve,reject
 
 promise中的两个静态方法 ：Promise.resolve   Promise.reject
 //将非promise对象转化为promise对象
-    
+
+
+promise的两个控制时序的方法:all,rece
+
     
 特性 1.控制时序 2.封装复用
  
@@ -155,3 +158,38 @@ load(url).then((res)=>{
     //不论什么时候都会执行
 })
 ```
+
+
+## async await  异步函数
+
+async返回一个promise对象
+
+
+```
+async function loadImg(){
+   let  img = await load(url)//返回一个resolve --> 如果返回一个reject,会报错(用try  catch 解决)
+   let num = await 1000;//1000
+   document.body.appendChild(img)
+}
+loadImg() //返回一个promise
+```
+
+
+## class面向对象
+
+
+super在第一行使用   拷贝父类的构造函数
+
+
+## 深浅拷贝
+
+
+> 数组 [...arr]  ,concat()  slice()
+>
+> 对象 {...obj}  Object.assign()
+
+
+==只做第一层的的深拷贝==
+    
+
+JSON.parse(JSON.stringify())//深拷贝
