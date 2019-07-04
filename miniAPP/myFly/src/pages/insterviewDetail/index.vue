@@ -1,37 +1,39 @@
 <template>
   <div class="detail">
-    <p>
-      <span>面试地址:</span>
-      <input type="text" :value="address">
-    </p>
-    <p>
-      <span>面试时间:</span>
-      <input type="text" :value="time">
-    </p>
-    <p>
-      <span>联系方式:</span>
-      <input type="text" :value="obj.phone">
-    </p>
-    <p>
-      <span>是否提醒:</span>
-      <input type="text" :value="obj.remind === -1 ? '未提醒' : '已提醒'">
-    </p>
-    <p>
-      <span>面试状态:</span>
-      <input type="text" :value="status">
-    </p>
-    <p>
-      <span>取消提醒:</span>
-      <switch name="switch"/>
-    </p>
-    <div class="btnDiv" v-if="obj.status === -1">
-      <button>去打卡</button>
-      <button>放弃面试</button>
-    </div>
+    <form @submit="formSubmit" report-submit="true">
+      <p>
+        <span>面试地址:</span>
+        <input type="text" :value="address">
+      </p>
+      <p>
+        <span>面试时间:</span>
+        <input type="text" :value="time">
+      </p>
+      <p>
+        <span>联系方式:</span>
+        <input type="text" :value="obj.phone">
+      </p>
+      <p>
+        <span>是否提醒:</span>
+        <input type="text" :value="obj.remind === -1 ? '未提醒' : '已提醒'">
+      </p>
+      <p>
+        <span>面试状态:</span>
+        <input type="text" :value="status">
+      </p>
+      <p>
+        <span>取消提醒:</span>
+        <switch name="switch" :checked="obj.remind===1" @change="cancelRemind"/>
+      </p>
+      <div class="btnDiv" v-if="obj.status === -1">
+        <button @tap="goToCard">去打卡</button>
+        <button @tap="giveup">放弃面试</button>
+      </div>
+    </form>
   </div>
 </template>
 <script>
-import { mapState } from "vuex";
+import { mapState, mapActions } from "vuex";
 export default {
   props: {},
   components: {},
@@ -40,7 +42,8 @@ export default {
   },
   computed: {
     ...mapState({
-      obj: state => state.interview.obj
+      obj: state => state.interview.obj,
+      id: state => state.interview.id
     }),
     address() {
       return JSON.parse(this.obj.address).address;
@@ -60,9 +63,47 @@ export default {
       return str;
     }
   },
-  methods: {},
+  methods: {
+    ...mapActions({
+      updatedList: "interview/updatedList"
+    }),
+    goToCard() {
+      wx.navigateTo({
+        url: "../signCard/main"
+      });
+    },
+    //取消提醒
+    cancelRemind(e) {
+      this.updatedList({
+        id: this.id,
+        params: { remind: e.target.value ? 1 : -1 }
+      });
+    },
+    //放弃面试
+    giveup() {
+      wx.showModal({
+        title: "温馨提示", //提示的标题,
+        content: "确定要放弃面试吗?", //提示的内容,
+        success: async res => {
+          if (res.confirm) {
+            await this.updatedList({
+              id: this.id,
+              params: { status: 1 }
+            });
+          }
+        }
+      });
+    }
+  },
   created() {},
-  mounted() {}
+  mounted() {
+    
+  },
+  onShow() {
+    wx.setNavigationBarTitle({
+      title: this.obj.company
+    });
+  }
 };
 </script>
 <style lang="scss" scoped>

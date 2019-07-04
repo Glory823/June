@@ -15,11 +15,12 @@
           <span>面试时间</span>
           <picker
             mode="multiSelector"
-            @change="bindMultiPickerChange"
-            :value="multiIndex"
-            :range="newMultiArray"
+            :range="dateRange"
+            :value="info.date"
+            @change="dateChange"
+            @columnchange="columnChange"
           >
-            <view class="picker">{{time}}</view>
+            <view class="picker">{{dateShow}}</view>
           </picker>
         </p>
         <p>
@@ -35,7 +36,7 @@
       </div>
       <h3>备注信息</h3>
       <div class="mainText">
-        <textarea name id cols="20" rows="10" placeholder="备注信息(可选，100个字以内)"></textarea>
+        <textarea id cols="20" rows="10" placeholder="备注信息(可选，100个字以内)" name="textArea"></textarea>
       </div>
       <button form-type="submit">确定</button>
     </form>
@@ -43,24 +44,44 @@
 </template>
 
 <script>
-import { mapState } from "vuex";
-import {addView} from "../../service/addList"
+import { mapState, mapActions } from "vuex";
+const moment = require("moment");
+
+const days = [];
+const hours = [];
+const minutes = [];
+const range = [];
+
+function addZero(text) {
+  return text < 10 ? "0" + text : text;
+}
+
+for (let i = 0; i <= 9; i++) {
+  days.push(addZero(i));
+}
+range.push(days);
+for (let i = 0; i <= 23; i++) {
+  hours.push(addZero(i));
+}
+range.push(hours);
+for (let i = 0; i < 60; i += 10) {
+  minutes.push(addZero(i) + "分");
+}
+range.push(minutes);
+
 export default {
   data() {
     return {
-      time:
-        new Date().getFullYear() +
-        "-" +
-        (new Date().getMonth() * 1 + 1) +
-        "-" +
-        new Date().getDate() + 
-        " " +
-        (new Date().getHours() * 1 + 1) +
-        ":" +
-        new Date().getMinutes(),
-      multiArray: [],
-      multiIndex: [0, 0, 0]
+      info: {
+        date: [0, 0, 0]
+      }
     };
+  },
+  created() {
+    // 如果当前时间是十一点之后，过滤掉今天
+    if (moment().hour() == 23) {
+      this.info.date = [1, 0, 0];
+    }
   },
 
   components: {},
@@ -69,73 +90,123 @@ export default {
     ...mapState({
       obj: state => state.address.obj
     }),
-    newMultiArray: () => {
-      function addZero(text) {
-        return text < 10 ? "0" + text : text;
+    // 处理面试日期
+    dateRange() {
+      let dateRange = [...range];
+      // 如果时间是今天，过滤掉现在之前的小时
+      if (!this.info.date[0]) {
+        dateRange[1] = dateRange[1].filter(item => {
+          return item > moment().hour();
+        });
+      } else {
+        dateRange[1] = range[1];
       }
-
-      const date = new Date();
-      const days = [];
-      const hours = [];
-      const minutes = [];
-      const multiArrays = [];
-
-      for (let i = date.getDate(); i <= 31; i++) {
-        days.push(addZero(i) + "日");
-      }
-      multiArrays.push(days);
-      for (let i = date.getHours(); i <= 23; i++) {
-        hours.push(addZero(i) + "时");
-      }
-      multiArrays.push(hours);
-      for (let i = 0; i < 60; i += 10) {
-        minutes.push(addZero(i) + "分");
-      }
-      multiArrays.push(minutes);
-      return multiArrays;
+      // 格式化小时
+      dateRange[1] = dateRange[1].map(item => {
+        return item + "点";
+      });
+      // 计算当前日期之后的十天
+      dateRange[0] = dateRange[0].map(item => {
+        return (
+          moment()
+            .add(item, "days")
+            .date() + "号"
+        );
+      });
+      return dateRange;
+    },
+    // 显示的日期
+    dateShow() {
+      return moment()
+        .add(
+          moment().hour() == 23 ? this.info.date[0] - 1 : this.info.date[0],
+          "d"
+        )
+        .add(this.info.date[1] + 1, "h")
+        .minute(this.info.date[2] * 10)
+        .format("YYYY-MM-DD HH:mm");
     }
   },
 
   methods: {
-    bindMultiPickerChange(e) {
-      this.multiIndex = e.target.value;
-      const index = this.multiIndex;
-      const day = this.newMultiArray[0][index[0]].slice(0,2);
-      const hour = this.newMultiArray[1][index[1]].slice(0,2);
-      const minute = this.newMultiArray[2][index[2]].slice(0,2);
-      this.time =
-        new Date().getFullYear() +
-        "-" +
-        (new Date().getMonth() * 1 + 1) +
-        "-" +
-        day +
-        " " +
-        hour + ":"
-        minute;
+    ...mapActions({
+      btnClick: "addList/btnClick"
+    }),
+    // 监听多列选择器每列变化
+    columnChange(e) {
+      let { column, value } = e.target;
+      let date = [...this.info.date];
+      date[column] = value;
+      this.info.date = date;
     },
-    formSubmit: function(e) {
-      const value = e.mp.detail.value;
-      // this.goToView({
-      //   componentName:value.componentName,
-      //   componentTel:value.componentTel,
-      //   viewTime:this.time,
-      //   viewAddress:value.viewAddress
-      // })
-      const data = {
-        company:value.componentName,
-        phone:value.componentTel,
-        form_id:e.mp.detail.formId
+    //点击确定按钮
+    formSubmit: async function(e) {
+      const detail = e.mp.detail;
+
+      //判断公司名称
+      if (detail.value.componentName === "") {
+        wx.showToast({
+          title: "请输入公司名称", //提示的内容,
+          icon: "none" //图标,
+        });
+        return false;
       }
-      console.log(+new Date(this.time))
+      //判断手机号
+      if (!/^1[3578]\d{9}$/.test(detail.value.componentTel)) {
+        wx.showToast({
+          title: "请输入面试联系人的手机", //提示的内容,
+          icon: "none" //图标,
+        });
+        return false;
+      }
+      // 判断公司地址
+      if (!this.obj.address) {
+        wx.showToast({
+          title: "请选择公司地址", //提示的内容,
+          icon: "none" //图标,
+        });
+        return false;
+      }
+      //调用添加面试
+      const res = await this.btnClick({
+        company: detail.value.componentName,
+        phone: detail.value.componentTel,
+        form_id: detail.formId,
+        address: JSON.stringify(this.obj),
+        latitude: this.obj.location.lat,
+        longitude: this.obj.location.lng,
+        start_time: +new Date(this.dateShow),
+        description: detail.value.textArea
+      });
+      console.log(res);
+
+      if (res.code === 0) {
+        //添加面试成功
+        wx.showModal({
+          title: "温馨提示",
+          content: "添加面试成功",
+          showCancel: false,
+          success(res) {
+            wx.navigateTo({
+              url: "../interviewList/main"
+            });
+          }
+        });
+      } else {
+        //添加面试失败
+        wx.showModal({
+          title: "温馨提示",
+          content: res.msg
+        });
+      }
     },
+    //添加面试地址
     geToAddress: () => {
       wx.navigateTo({
         url: "../address/main"
       });
-    },
-  },
-
-  created() {}
+    }
+  }
 };
 </script>
 

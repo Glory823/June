@@ -2,9 +2,9 @@
   <div class="main">
     <div class="mainTop">
       <p>
-        <img src="../../../static/images/logo.png" alt>
+        <cover-image src="/static/images/logo.png" class="topImg" />
       </p>
-      <span>{{phone}}</span>
+      <span>{{phoneNumber}}</span>
     </div>
     <ul>
       <li @click="goToAdd">
@@ -12,14 +12,14 @@
           <icon type="waiting" class="_icon"></icon>
           <label class="_label">我的面试</label>
         </p>
-        <img src="../../../static/images/arrow.svg" alt>
+        <cover-image src="/static/images/arrow.svg" class="addimg" />
       </li>
-      <li>
+      <li @click="showDialog">
         <p>
           <icon type="info" class="_icon"></icon>
           <label class="_label">客服中心</label>
         </p>
-        <img src="../../../static/images/arrow.svg" alt>
+        <cover-image src="/static/images/arrow.svg" class="addimg" />
       </li>
     </ul>
     <button v-if="!hasPhone" open-type="getPhoneNumber" @getphonenumber="getPhoneNumber">获取手机号</button>
@@ -41,19 +41,21 @@ export default {
 
   components: {},
 
-  computed: {
-    phone() {
-      function replaces(str, start, end, replaceStr) {
-        return str.substring(0, end - 3) + replaceStr + str.substring(end + 1);
-      }
-      return replaces(this.phoneNumber, 2, 6, "****");
-    }
-  },
+  computed: {},
 
   methods: {
     goToAdd() {
       wx.navigateTo({
-        url: "../addList/main"
+        url: "../interviewList/main"
+      });
+    },
+    showDialog() {
+      wx.showModal({
+        title: "模拟进入客服会话",
+        content: "开发者工具暂不支持打开客服会话,请使用真机调试",
+        showCancel: false,
+        confirmText: "返回",
+        confirmColor: "#19bf27"
       });
     },
     async getPhoneNumber(e) {
@@ -64,11 +66,14 @@ export default {
           iv: e.target.iv
         });
         console.log(data);
-        this.phoneNumber = data.data.phoneNumber;
+        this.phoneNumber = this.replaces(data.data.phoneNumber, 2, 6, "****");
       } else {
         //1.2.2用户授权失败,打开设置页面
         this.showSetting = true;
       }
+    },
+    replaces(str, start, end, replaceStr) {
+      return str.substring(0, end - 3) + replaceStr + str.substring(end + 1);
     }
   },
 
@@ -122,7 +127,7 @@ export default {
       border-radius: 50%;
       line-height: 70px;
       margin: 0 auto;
-      img {
+      .topImg {
         width: 100%;
         height: 100%;
       }
@@ -149,7 +154,7 @@ export default {
           color: #666;
         }
       }
-      img {
+      .addimg {
         width: 20px;
         height: 20px;
       }

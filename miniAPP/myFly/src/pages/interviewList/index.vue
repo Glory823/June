@@ -5,15 +5,15 @@
         v-for="(item,index) in tabList"
         :key="index"
         :class="{active:index==ind}"
-        @click="liClick({index,status:item.status})"
+        @tap="liClick({index,status:item.status})"
       >{{item.title}}</li>
     </ul>
     <div class="main">
       <div v-if="renderList.length>0">
-        <dl v-for="(item,index) in renderList" :key="index" @click="gotoDetail(item.id)">
+        <dl v-for="(item,index) in renderList" :key="index" @tap="gotoDetails(item.id)">
           <dt>
             <h3>{{item.company}}</h3>
-            <span :class="{red:item.status === 1}">{{status}}</span>
+            <span :class="{red:item.status === 1,blue:item.status === 0}">{{status}}</span>
           </dt>
           <p>{{item.address.address }}</p>
           <dd>
@@ -22,9 +22,7 @@
           </dd>
         </dl>
       </div>
-      <div class="mainText" v-else>
-        当前分类还没有面试!
-      </div>
+      <div class="mainText" v-else>当前分类还没有面试!</div>
     </div>
   </div>
 </template>
@@ -34,13 +32,16 @@ export default {
   props: {},
   components: {},
   data() {
-    return {};
+    return {
+      ind: 0,
+      page: 1,
+      pageSize: 6,
+      gotoStatus: -1
+    };
   },
   computed: {
     ...mapState({
-      list: state => state.interview.list,
       tabList: state => state.interview.tabList,
-      ind: state => state.interview.ind,
       renderList: state => state.interview.renderList
     }),
     status() {
@@ -59,24 +60,58 @@ export default {
   },
   methods: {
     ...mapActions({
-      getData: "interview/getData"
-    }),
-    ...mapMutations({
-      liClick: "interview/liClick",
+      getData: "interview/getData",
       gotoDetail: "interview/gotoDetail"
-    })
+    }),
+    //跳转详情
+    async gotoDetails(id) {
+      let data = await this.gotoDetail(id);
+      console.log(data)
+      if (data.code === 0) {
+        wx.navigateTo({
+          url: "../insterviewDetail/main"
+        });
+      }
+    },
+    //tab切换
+    liClick(payload) {
+      this.page = 1;
+      this.gotoStatus = payload.status;
+      this.getData({
+        status: payload.status,
+        page: this.page,
+        pageSize: this.pageSize
+      });
+      this.ind = payload.index;
+    }
   },
-  created() {
-    this.getData();
+  //刚进来页面的显示
+  onShow() {
+    this.getData({ status: -1, page: this.page, pageSize: this.pageSize });
   },
-  mounted() {}
+  mounted() {},
+  //上拉加载数据
+  onReachBottom() {
+    if (this.page > this.renderList.length / this.pageSize) {
+      wx.showToast({
+        title: "没有更多数据了", //提示的内容,
+        icon: "none" //图标,
+      });
+    } else {
+      this.page = this.page + 1;
+      this.getData({
+        status: this.gotoStatus,
+        page: this.page,
+        pageSize: this.pageSize
+      });
+    }
+    console.log(this.page, "....", this.renderList);
+  }
 };
 </script>
 <style lang="scss" scoped>
 .listMain {
   width: 100%;
-  height: 100%;
-  overflow-y: auto;
 }
 .listHeader {
   width: 100%;
@@ -126,11 +161,15 @@ export default {
       }
     }
     & > p {
+      width: 300px;
+      height: 20px;
+      line-height: 20px;
       font-size: 16px;
       color: #999;
       margin: 7px 0;
       overflow: hidden;
       text-overflow: ellipsis;
+      white-space: nowrap;
     }
     dd {
       margin: 7px 0;
@@ -156,13 +195,26 @@ export default {
       border-color: hsla(0, 87%, 69%, 0.2);
       color: #f56c6c;
     }
+    span.bule {
+      border-color: hsla(0, 87%, 69%, 0.2)!important;
+      background: rgba(64, 158, 255, 0.1)!important;
+      color: #409eff !important;
+    }
+  }
+  & > p {
+    text-align: center;
+    font-size: 32rpx;
+    line-height: 2;
+    color: #999;
+    border-top: 20rpx solid #eee;
   }
 }
-.mainText{
+.mainText {
   width: 100%;
   text-align: center;
   font-size: 16px;
   color: #666;
   padding: 50px 0;
+  box-sizing: border-box;
 }
 </style>

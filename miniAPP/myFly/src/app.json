@@ -5,7 +5,8 @@
     "pages/address/main",
     "pages/interviewList/main",
     "pages/personal/main",
-    "pages/insterviewDetail/main"
+    "pages/insterviewDetail/main",
+    "pages/signCard/main"
   ],
   "permission": {
     "scope.userLocation": {

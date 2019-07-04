@@ -7,7 +7,7 @@
     <ul>
       <li v-for="(item,index) in mks" :key="index" @click="goToAdd(item)">
         <div class="li_left">
-          <img src="../../../static/images/address.svg" alt>
+          <cover-image src="/static/images/address.svg" />
         </div>
         <div class="li_right">
           <h3>{{item.title}}</h3>
