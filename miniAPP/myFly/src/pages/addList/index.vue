@@ -76,9 +76,9 @@ export default {
         date: [0, 0, 0]
       }
     };
-  },
+  }, 
   created() {
-    // 如果当前时间是十一点之后，过滤掉今天
+    // 如果当前时间是十一点之后，过滤掉今天 -- moment().hour() -> 获取当前小时
     if (moment().hour() == 23) {
       this.info.date = [1, 0, 0];
     }

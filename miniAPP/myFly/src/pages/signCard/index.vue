@@ -28,6 +28,7 @@ export default {
       obj: state => state.interview.obj,
       id: state => state.interview.id
     }),
+    //重新计算距离
     distance(){
       return getDistance(this.obj.latitude, this.obj.longitude, )
     },
@@ -73,7 +74,7 @@ export default {
           if (this.distance > 1000){
             distance = (this.distance/1000).toFixed(2)+'公里'
           }else{
-            distance = this.distance+'米'
+            distance = this.distance.toFixed(2)+'米'
           }
           console.log('distance...', distance, this.distance);
           wx.showToast({
@@ -86,7 +87,6 @@ export default {
 
   created() {},
   onShow() {
-    console.log(this.obj)
     wx.setNavigationBarTitle({
       title: "打卡:" + this.obj.company
     });

@@ -76,13 +76,13 @@ export default {
     //tab切换
     liClick(payload) {
       this.page = 1;
-      this.gotoStatus = payload.status;
+      this.gotoStatus = payload.status; 
+      this.ind = payload.index;
       this.getData({
         status: payload.status,
         page: this.page,
         pageSize: this.pageSize
       });
-      this.ind = payload.index;
     }
   },
   //刚进来页面的显示
