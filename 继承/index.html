@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>JS继承</title>
+  </head>
+  <body>
+    <script>
+      function Person(age, name) {
+        // 判断当前this执行，防止把类直接调用
+        if (this != window) {
+          this.age = age;
+          this.name = name;
+        } else {
+          return new Person(age, name);
+        }
+      }
+      Person.prototype.description =
+        "人，可以从生物、精神与文化等各个层面来定义，或是这些层面定义的结合。";
+      // 实例化一个Person
+      var person = new Person(18, "陈美峰");
+      var person2 = Person(19, "顾长城");
+      console.log(person, person.description);
+
+
+      // 原型链继承
+      function Man() {}
+      Man.prototype = new Person();
+      var man = new Man();
+      // man.description = '000';
+    //   console.log(man.description, person.description);
+
+
+
+      // 构造函数继承
+      function Woman(name) {
+        Person.call(this, 20, name);
+      }
+      var woman = new Woman("黄林");
+    //   console.log(woman.description, woman.name);
+
+
+
+      // 组合继承
+      function Student(name) {
+        Person.call(this, 100, "小学生");
+        this.grade = "三年级";
+      }
+      Student.prototype = new Person();
+      var student = new Student();
+    //   console.log(student.description, student.name, student.grade);
+
+
+
+
+      // 拷贝继承
+      function extend(source, target) {
+        for (var property in source) {
+          if (source.hasOwnProperty(property)) {
+            target[property] = source[property];
+          }
+        }
+        return target;
+      }
+      var aodi = extend(person, {});
+    //   console.log(aodi);
+    </script>
+  </body>
+</html>
