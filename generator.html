@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>generator函数</title>
+  </head>
+  <body>
+    <script>
+      // let getImg = function *(){
+      // }
+      function* getImg() {
+        let res1 = yield 1;
+        console.log("res1...", res1);
+        let res2 = yield 2;
+        console.log("res2...", res2);
+        let res3 = yield 3;
+        console.log("res3...", res3);
+        return 4;
+      }
+      // generator函数第一次调用，返回的是一个迭代器
+      let gen = getImg();
+
+      // 后一次调用next传入的表达式会作为前一次yield表达式的返回值
+      console.log(gen.next(100));
+      console.log(gen.next(200));
+      console.log(gen.next());
+      console.log(gen.next());
+      console.log(gen.next());
+      // gen.next();
+      // gen.next();
+      // gen.next();
+      // yield配合promise
+      function loadImg(src) {
+        return new Promise((resolve, reject) => {
+          let img = new Image();
+          img.src = src;
+          img.onload = function() {
+            resolve(img);
+          };
+          img.onerror = function(e) {
+            reject(e);
+          };
+        });
+      }
+      var arr = [
+        "https://ss3.baidu.com/-fo3dSag_xI4khGko9WTAnF6hhy/image/h%3D300/sign=b5e4c905865494ee982209191df4e0e1/c2cec3fdfc03924590b2a9b58d94a4c27d1e2500.jpg",
+        "https://ss0.baidu.com/94o3dSag_xI4khGko9WTAnF6hhy/image/h%3D300/sign=0c33492254df8db1a32e7a643922dddb/0ff41bd5ad6eddc40189fc4133dbb6fd52663319.jpg",
+        "https://ss2.baidu.com/-vo3dSag_xI4khGko9WTAnF6hhy/image/h%3D300/sign=d985fb87d81b0ef473e89e5eedc551a1/b151f8198618367aa7f3cc7424738bd4b31ce525.jpg",
+        "https://ss0.baidu.com/94o3dSag_xI4khGko9WTAnF6hhy/image/h%3D300/sign=a62e824376d98d1069d40a31113eb807/838ba61ea8d3fd1fc9c7b6853a4e251f94ca5f46.jpg"
+      ];
+      function* loadImgSync() {
+        for (let i = 0, len = arr.length; i < len; i++) {
+          let img = yield loadImg(arr[i]);
+          document.body.appendChild(img);
+        }
+      }
+      // let imgSync = loadImgSync();
+      // // 添加第一张图片
+      // imgSync.next().value.then(res=>{
+      //     // 添加第二张图片
+      //     imgSync.next(res).value.then(res=>{
+      //         imgSync.next(res)
+      //     });
+      // });
+
+      // 封装generator函数的执行器
+      function run(func) {
+        // 1.获取generator函数迭代器
+        let gen = func();
+        // 2.封装执行函数
+        function exec(value) {
+          let next = gen.next(value);
+          console.log("next...", next);
+          // 3.获取到每一步的执行结果
+          if (!next.done) {
+            // 4.获取到每一步yield执行结果，之后继续调用next
+            let value = next.value;
+            if (value.then) {
+              value.then(res => {
+                exec(res);
+              });
+            } else {
+              exec(value);
+            }
+          }
+        }
+
+        exec();
+      }
+      run(loadImgSync);
+    </script>
+  </body>
+</html>
